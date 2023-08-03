@@ -92,7 +92,7 @@ const EditMovie = () => {
         }
 
 
-    }, [id, jwtToken, navigate]);
+    }, [id, jwtToken, navigate, movie]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -113,6 +113,23 @@ const EditMovie = () => {
         console.log("value in handleCheck:", event.target.value);
         console.log("checked is:", event.target.checked);
         console.log("position is:", position);
+
+        let tmpArr = movie.genres;
+
+        tmpArr[position].checked = !tmpArr[position].checked;
+
+        let tmpIDs = movie.genres_array;
+
+        if (!event.target.checked) {
+            tmpIDs.splice(tmpIDs.indexOf(event.target.value));
+        } else {
+            tmpIDs.push(parseInt(event.target.value));
+        }
+
+        setMovie({
+            ...movie,
+            genres_array: tmpIDs,
+        });
     }
     
     return (
