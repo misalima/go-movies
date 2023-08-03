@@ -1,6 +1,7 @@
 import Input from "./form/Input";
 import Select from "./form/Select";
 import TextArea from "./form/TextArea";
+import Checkbox from "./form/Checkbox";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -31,16 +32,67 @@ const EditMovie = () => {
         runtime: "",
         mpaa_rating: "",
         description: "",
+        genres: [],
+        genres_array: [Array(13).fill(false)],
     });
+    
     //get id from url
     let {id} = useParams();
+    if (id === undefined) {
+        id = 0;
+    }
 
     useEffect(() => {
         if (jwtToken === "") {
             navigate("/login");
             return
         }
-    }, [jwtToken, navigate]);
+        
+        if (id === 0) {
+            //adding a movie
+            setMovie({
+                id: 0,
+                title: "",
+                release_date: "",
+                runtime: "",
+                mpaa_rating: "",
+                description: "",
+                genres: [],
+                genres_array: [Array(13).fill(false)],
+            })
+
+            const headers = new Headers();
+            headers.append("Content-Type", "application/json");
+
+            const requestOptions = {
+                method: "GET",
+                headers: headers,
+            }
+
+            fetch(`http://localhost:8080/genres`, requestOptions)
+                .then((response) => response.json())
+                .then((data) => {
+                    const checks = [];
+
+                    data.forEach(g => {
+                        checks.push({id: g.id, checked: false, genre: g.genre});
+                    })
+
+                    setMovie(m => ({
+                        ...movie,
+                        genres: checks,
+                        genres_array: [],
+                    }))
+                })
+                .catch( err => {
+                    console.log(err)
+                })
+        } else {
+            //editing a movie
+        }
+
+
+    }, [id, jwtToken, navigate]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -54,6 +106,13 @@ const EditMovie = () => {
             [name]: value,
         })
 
+    }
+
+    const handleCheck = (event, position) => {
+        console.log("handlecheck called")
+        console.log("value in handleCheck:", event.target.value);
+        console.log("checked is:", event.target.checked);
+        console.log("position is:", position);
     }
     
     return (
@@ -119,6 +178,25 @@ const EditMovie = () => {
 
                 <hr />
 
+                
+                {movie.genres && movie.genres.length > 1 &&
+                    <>
+                        {
+                            Array.from(movie.genres).map((g, index) => 
+                                <Checkbox
+                                    title={g.genre}
+                                    name={"genre"}
+                                    key={index}
+                                    id={"genre-" + index}
+                                    onChange={(event) => handleCheck(event, index)}
+                                    value={g.id}
+                                    checked={movie.genres[index].checked}
+                                />
+                            )
+                        }
+                    
+                    </>
+                }
             </form>
             
         </div>
