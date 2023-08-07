@@ -4,6 +4,7 @@ import TextArea from "./form/TextArea";
 import Checkbox from "./form/Checkbox";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const EditMovie = () => {
     const navigate = useNavigate;
@@ -92,10 +93,41 @@ const EditMovie = () => {
         }
 
 
-    }, [id, jwtToken, navigate, movie]);
+    }, [id, jwtToken, navigate]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
+
+        let errors = [];
+        let required = [
+            { field: movie.title, name: "title" },
+            { field: movie.release_date, name: "release_date" },
+            { field: movie.runtime, name: "runtime" },
+            { field: movie.description, name: "description" },
+            { field: movie.mpaa_rating, name: "mpaa_rating" },
+        ]
+
+        required.forEach(function (obj) {
+            if (obj.field === "") {
+                errors.push(obj.name)
+            };
+        })
+
+        if (movie.genres_array.length === 0) {
+            Swal.fire({
+                title: 'Error!',
+                text: "You must choose at least one genre!",
+                icon: 'error',
+                confirmButtonText: 'OK',
+            })
+            errors.push("genres");
+        }
+
+        setErrors(errors);
+
+        if (errors.length > 0) {
+            return false
+        }
     }
 
     const handleChange = () => (event) => {
@@ -214,6 +246,10 @@ const EditMovie = () => {
                     
                     </>
                 }
+
+                <hr />
+
+                <button className="btn btn-primary" >Save</button>
             </form>
             
         </div>
