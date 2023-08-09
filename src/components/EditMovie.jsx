@@ -128,6 +128,43 @@ const EditMovie = () => {
         if (errors.length > 0) {
             return false
         }
+
+        //save changes
+        const headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("Authorization", "Bearer " + jwtToken);
+
+        let method = "PUT";
+
+        if (movie.id > 0) {
+            method = "PATCH";
+        }
+
+        const requestBody = movie;
+
+        requestBody.release_date = new Date(movie.release_date)
+        requestBody.runtime = parseInt(movie.runtime, 10)
+
+        let requestOptions = {
+            body: JSON.stringify(requestBody),
+            method: method,
+            headers: headers,
+            credentials: "include"
+        }
+
+        fetch(`http://localhost:8080/admin/movies/${movie.id}`, requestOptions)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.error) {
+                    console.log(data.error)
+                } else {
+                    navigate("/manage-catalogue")
+                }
+            })
+            .catch( err => {
+                console.log(err);
+            })
+
     }
 
     const handleChange = () => (event) => {
