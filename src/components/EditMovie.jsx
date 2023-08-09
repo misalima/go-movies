@@ -49,8 +49,59 @@ const EditMovie = () => {
             return
         }
         
-        if (id === 0) {
+        if (id !== 0) {
             //adding a movie
+            setMovie({
+                id: 0,
+                title: "",
+                release_date: "",
+                runtime: "",
+                mpaa_rating: "",
+                description: "",
+                genres: [],
+                genres_array: [Array(13).fill(false)],
+            })
+
+            const headers = new Headers();
+            headers.append("Content-Type", "application/json");
+            headers.append("Authorization", "Bearer " + jwtToken);
+
+            const requestOptions = {
+                method: "GET",
+                headers: headers,
+            }
+
+            fetch(`http://localhost:8080/admin/movies/${id}`, requestOptions)
+                .then((response) => {
+                    if (response.status !== 200) {
+                        setError("Invalid response code" + response.status)
+                    } 
+                    return response.json()
+                })
+                .then((data) => {
+                    //fix release date
+                    data.movie.release_date = new Date(data.movie.release_date).toISOString().split('T')[0]
+                    const checks = [];
+
+                    data.genres.forEach(g => {
+                        if (data.movie.genres_array.indexOf(g.id) !== -1) {
+                            checks.push({id: g.id, checked: true, genre: g.genre});
+                        } else {
+                            checks.push({id: g.id, checked: false, genre: g.genre});
+                        }
+                        
+                    })
+
+                    setMovie(m => ({
+                        ...data.movie,
+                        genres: checks,
+                    }))
+                })
+                .catch( err => {
+                    console.log(err)
+                })
+        } else {
+            //editing a movie
             setMovie({
                 id: 0,
                 title: "",
@@ -88,8 +139,7 @@ const EditMovie = () => {
                 .catch( err => {
                     console.log(err)
                 })
-        } else {
-            //editing a movie
+
         }
 
 
@@ -205,7 +255,7 @@ const EditMovie = () => {
         <div>
             <h2>Add/Edit Movie</h2>
             <hr />
-            <pre>{JSON.stringify(movie, null, 3)}</pre>
+            {/* <pre>{JSON.stringify(movie, null, 3)}</pre> */}
             <form onSubmit={handleSubmit}>
                 <input type="hidden" name="id" value={movie.id} id="id"></input>
 
@@ -246,6 +296,7 @@ const EditMovie = () => {
                     title={"MPAA Rating"}
                     name={"mpaa_rating"}
                     options={mpaaOptions}
+                    value={movie.mpaa_rating}
                     onChange={handleChange("mpaa_rating")}
                     placeHolder={"Choose..."}
                     errorMsg={"Please choose"}
