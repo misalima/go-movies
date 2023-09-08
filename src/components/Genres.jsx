@@ -39,7 +39,7 @@ const Genres = () => {
                     <Link
                         key={g.id}
                         className="list-group-item list-group-item-action"
-                        to={`http://localhost:8080/genres/${g.id}`}
+                        to={`/genres/${g.id}`}
                         state={
                             {
                                 genreName: g.genre,
